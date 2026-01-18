@@ -1,9 +1,17 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 
 from app.models import AuthProvider, PlanType
+
+MAX_BCRYPT_PASSWORD_BYTES = 72
+
+
+def _enforce_bcrypt_password_limit(value: str) -> str:
+    if len(value.encode("utf-8")) > MAX_BCRYPT_PASSWORD_BYTES:
+        raise ValueError("Password must be at most 72 bytes when encoded as UTF-8")
+    return value
 
 
 class UserCreate(BaseModel):
@@ -12,6 +20,13 @@ class UserCreate(BaseModel):
     password: str | None = None
     auth_provider: AuthProvider = AuthProvider.LOCAL
     google_id: str | None = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_length(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        return _enforce_bcrypt_password_limit(value)
 
 
 class UserUpdate(BaseModel):
@@ -37,6 +52,11 @@ class UserResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_length(cls, value: str) -> str:
+        return _enforce_bcrypt_password_limit(value)
 
 
 class GoogleLoginRequest(BaseModel):
