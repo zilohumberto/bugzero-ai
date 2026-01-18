@@ -1,0 +1,7 @@
+APP_NAME=BugZero API
+DEBUG=false
+API_PREFIX=/api
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/bugzero
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=bugzero
