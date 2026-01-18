@@ -6,6 +6,7 @@ import type {
 } from '@/types'
 import { delay, generateId } from '@/utils/helpers'
 import { getDomainFromUrl } from '@/utils/validators'
+import { getFavicon } from '@/services/favicon'
 
 // Mock website data for validation
 const MOCK_WEBSITES: Record<string, { title: string; description: string }> = {
@@ -71,20 +72,22 @@ export async function validateWebsite(url: string): Promise<ValidateWebsiteRespo
   const knownSite = Object.entries(MOCK_WEBSITES).find(([key]) => domain.includes(key))
 
   if (knownSite) {
+    const { url: faviconUrl } = getFavicon(domain)
     return {
       isValid: true,
       title: knownSite[1].title,
       description: knownSite[1].description,
-      favicon: `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+      favicon: faviconUrl
     }
   }
 
   // For unknown but valid-looking URLs
+  const { url: fallbackFaviconUrl } = getFavicon(domain)
   return {
     isValid: true,
     title: `Website - ${domain}`,
     description: `Content from ${domain}`,
-    favicon: `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+    favicon: fallbackFaviconUrl
   }
 }
 
